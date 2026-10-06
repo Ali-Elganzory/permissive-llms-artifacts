@@ -1,0 +1,255 @@
+\documentclass{article}
+
+\usepackage{neurips_2026}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsmath,amssymb,amsfonts,amsthm,bm}
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{graphicx}       % graphicx
+\usepackage{tabularx}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{cleveref}
+\crefname{appendix}{Appendix}{Appendices}
+\Crefname{appendix}{Appendix}{Appendices}
+\usepackage{standalone}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc,decorations.pathreplacing,fit}
+\usepackage{makecell}
+
+\interfootnotelinepenalty=10000
+
+\title{Driving Post-Training Gains via Front-Loaded Reasoning Despite a Permissive-Data Constraint}
+
+\author{%
+  Anonymous
+}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Permissively licensed pre-training corpora make open foundation model research lawful, auditable, and shareable, but they are widely assumed to cost capability. Recent work narrowed that gap at the base-model stage by front-loading instruction and reasoning data into pre-training, which leaves two variables bundled: the licensing of the source pool and the composition of the mixture. We separate them with a $3 \times 2$ factorial at 1.7B parameters and 300B pre-training tokens, crossing three web substrates (a permissive-first pool, Nemotron-CC-HQ, and FineWeb-Edu) with the presence or absence of the same instruction-and-reasoning subset, and carrying every resulting model through an identical long-context extension and Tulu3 post-training pipeline under one evaluation protocol with three decoding seeds. Front-loading is the operative variable, raising the eleven-benchmark reasoning suite average in all eighteen cells of the design by $10.3$ to $19.2$ points, with gains of $+23.0$ points on code, $+15.6$ on mathematics, and $+10.4$ on instruction following. Licensing is not. Once both pools are front-loaded the permissive substrate is statistically indistinguishable from both non-permissive substrates at 4K context after post-training and is ahead by $4.7$ to $5.0$ points at 16K, with the front-loading by licensing interaction indistinguishable from zero. Receptivity to a later reasoning stage is likewise a property of the mixture. Removing OpenThoughts3 from a 300B pre-training run and then applying identical reasoning post-training drops the suite average from $33.6$ to $23.9$ and returns AIME24 and AIME25 to zero, yet the gain is not specific to that corpus and reappears with three held-out reasoning corpora.
+\end{abstract}
+
+
+\section{Introduction}
+\label{sec:intro}
+
+Modern language models are built in stages, and the boundary between them is moving. Instruction data, mathematics, code, and reasoning traces, once the exclusive material of post-training, now enter the pre-training mixture directly. This reopens a question that the staged view took for granted, namely what a base model must already contain for post-training to do its work, and which later-stage gains were latent in the pre-training corpus all along.
+
+A second question runs alongside it. Open foundation model research has a practical interest in permissively licensed corpora, which can be audited, redistributed, and built on without legal friction. CommonPile~\citep{kandpal2025commonpilev018tb_arxiv} and CommonCorpus~\citep{langlais2025commoncorpus} pursue exactly this, historically at a measurable cost in capability, and MixtureVitae~\citep{nguyen2025mixturevitae_arxiv} narrowed that cost substantially at the base-model stage by combining permissive-first sourcing with an unusually large instruction and reasoning fraction. That result leaves two variables bundled. A permissive-first mixture that is also reasoning-dominant may be competitive because of its licensing constraint, because of its composition, or because of an interaction between them.
+
+We separate them with a $3 \times 2$ factorial at 1.7B parameters and a 300B-token budget that crosses the \emph{web substrate}, which carries the licensing constraint, with \emph{front-loading}, the presence or absence of the same instruction-and-reasoning subset in the pre-training mixture. All six models are pre-trained under one fixed recipe, carried through an identical long-context extension and Tulu3 post-training pipeline, and evaluated under a single protocol with three decoding seeds and item-level bootstrap intervals. Because only two factors move, and the post-training recipe never does, the resulting effects are attributable to the pre-training mixture rather than to a co-varying stage boundary, hyperparameter, or curriculum shift.
+
+The answer is asymmetric, and the asymmetry is the contribution. Front-loading is the driver, for permissive and non-permissive substrates alike, and licensing is a constraint under which that mechanism remains almost entirely available on reasoning and only partially available on general language understanding.
+
+\begin{itemize}
+\item \textbf{A factorial that separates composition from licensing.} At 300B pre-training tokens, under one recipe and one evaluation protocol with three seeds, front-loading raises the reasoning suite average in all eighteen cells of the design, by $10.3$ to $19.2$ points, with every bootstrap interval excluding zero (\Cref{sec:factorial}).
+\item \textbf{Licensing is nearly free on reasoning, and the interaction is null.} Once both pools are front-loaded, the permissive substrate matches both non-permissive substrates at 4K context after post-training, $+0.5$ and $+0.4$ points with intervals spanning zero, and leads at 16K by $+5.0$ and $+4.7$ points. The front-loading effect does not depend on licensing.
+\item \textbf{Licensing is not free on general language understanding.} Front-loading helps every substrate but does not close the substrate gap, which remains at $6.8$ to $8.8$ points.
+\item \textbf{Receptivity is a property of the mixture, not of the post-training corpus.} Removing OpenThoughts3 from a 300B pre-training run and then applying identical reasoning post-training costs $9.7$ points of suite average and $31.8$ points of MATH500, yet the gain reappears with three reasoning corpora held out of pre-training (\Cref{sec:receptivity}).
+\item \textbf{Open artifacts.} All base, SFT, DPO, and reasoning post-trained checkpoints will be released, with the pipeline that regenerates every table and figure here from per-sample evaluation records.
+\end{itemize}
+
+Front-loading is an established effect, shown by Front-Loaded Reasoning~\citep{akter2025front}, by mid-training work such as PRISM~\citep{runwal2026prism} and \citet{zhang2026interplay}, and anticipated by LIMA~\citep{zhou2023lima} and LIMO~\citep{yelimo}, where very small post-training sets elicit capability the base must already have held. What is new here is measuring it in a design where the attribution is unambiguous, in single-stage pre-training with full decontamination, and under a licensing constraint that no prior study has varied.
+
+\section{Experimental setup}
+\label{sec:methods}
+
+\subsection{Factorial design and matched pre-training}
+\label{sec:methods-factorial}
+
+Every model in the factorial is a 1.7B decoder transformer trained on 300B tokens under the \texttt{open-sci-ref} protocol~\citep{nezhurina2025opensciref}, which fixes architecture, tokenizer, optimizer, learning rate schedule, batch size, and total tokens, so that models differ only in their pre-training data. Full hyperparameters are in \Cref{app:hyperparams}.
+
+The two factors are the following.
+
+\textbf{Web substrate} takes three levels. The permissive-first substrate is the curated web portion of MixtureVitae~\citep{nguyen2025mixturevitae_arxiv}. The two non-permissive substrates are Nemotron-CC-HQ~\citep{su2025nemotroncctransformingcommoncrawl}, the strongest pre-training dataset identified in the \texttt{open-sci-ref} evaluation, and FineWeb-Edu~\citep{penedo2024fineweb}. The licensing constraint attaches to the substrate, so a model trained on a non-permissive substrate is non-permissive overall even where the front-loaded subset itself is permissive.
+
+\textbf{Front-loading} takes two levels, namely whether the MixtureVitae instruction-and-reasoning subset is present in the pre-training mixture. This is the same subset in all three substrates, which is what makes the front-loading effect comparable across them.
+
+Crossing the two factors gives six pre-training runs, each produced in a 4K and a 16K context variant and evaluated at three post-training stages, for thirty-six evaluated checkpoints and eighteen cells of the front-loading design. The pool is roughly 422B tokens, which permits a 300B-token budget without repetition.
+
+\subsection{Model zoo}
+\label{sec:methods-models}
+
+Beyond the factorial we post-train a wider set of 1.7B bases under the same pipeline. The matched-compute references are trained on 300B tokens under the identical \texttt{open-sci-ref} recipe, namely Nemotron-CC-HQ, FineWeb-Edu, DCLM~\citep{li2024datacomplm}, and CommonPile v0.1~\citep{kandpal2025commonpilev018tb_arxiv} (denoted Comma0.1, permissively licensed but without the instruction and reasoning enrichment). The external references are SmolLM2 1.7B~\citep{allal2025smollm2}, Qwen2.5 1.5B~\citep{qwen25tr}, and Qwen3 1.7B~\citep{qwen3tr}, released under their own recipes at 11T, 18T, and 36T tokens, and are uncontrolled upper references rather than matched comparisons, since architecture, tokenizer, and pre-training compute all differ.
+
+\subsection{Post-training pipeline}
+\label{sec:methods-posttrain}
+
+\Cref{fig:pipeline} gives the pipeline. Post-training data is identical across models within each stage.
+
+\begin{figure}[t]
+\centering
+\resizebox{\linewidth}{!}{\input{figures/figure_pipeline.tex}}
+\caption{\textbf{Post-training pipeline.} Stages marked $\dagger$ are skipped in some experiments and for some models. Bases with a native context of 16K or more skip the extension stage, the factorial and mixture-ablation models stop after DPO, and reasoning post-training is applied from the SFT checkpoint by default and from the base and DPO checkpoints in the controls of \Cref{sec:receptivity}.}
+\label{fig:pipeline}
+\end{figure}
+
+\textbf{Long-context extension.} We extend the context window from 4K to 16K with YaRN~\citep{peng2023yarn}, using a scaling factor of $4.0$ and one epoch of full-parameter supervised fine-tuning at a learning rate of $2 \times 10^{-4}$ with cosine decay. The mixture is 30\% long-context data, combining SeaLong~\citep{li2024sealong} and LongAlign~\citep{bai2024longalign}, and 70\% SmolTalk~\citep{allal2025smollm2}, which preserves general instruction following. The same recipe is applied to every base, so long-context behavior is attributable to the base rather than to the recipe.
+
+\textbf{Phase 1, instruction alignment.} We apply the Tulu3~\citep{lambert2024tulu} recipe in its two standard stages, supervised fine-tuning on the Tulu3 SFT mixture followed by DPO~\citep{rafailov2023direct} on Tulu3 preference data, both at Tulu3 defaults without model-specific tuning. We do not run Tulu3's reinforcement learning with verifiable rewards stage, so all Phase 1 results here describe the SFT and DPO stages only.
+
+\textbf{Phase 2, reasoning post-training.} We train for five epochs on a uniformly sampled 30K subset of OpenThoughts3~\citep{guha2025openthoughts} with the OT3 medium hyperparameters. The default starting point is each model's Phase 1 SFT checkpoint, since SFT and DPO give similar reasoning scores. The controls in \Cref{sec:receptivity} additionally start from the post-YaRN base and from the DPO checkpoint.
+
+\subsection{Evaluation}
+\label{sec:methods-bench}
+
+\textbf{Suites.} The primary suite covers mathematics with AIME24~\citep{aime2024}, AIME25~\citep{aime2025}, AMC23~\citep{maa2023amc}, MATH500~\citep{hendrycks2021math}, and GSM8K~\citep{cobbe2021training}, code with HumanEval~\citep{chen2021evaluating}, LiveCodeBench~\citep{jain2024livecodebench}, and MBPP~\citep{austin2021program}, science and knowledge-intensive question answering with GPQA-Diamond~\citep{rein2024gpqa} and JEEBench~\citep{arora2023have}, and instruction following with IFEval~\citep{zhou2023instruction}. The suite average is an unweighted macro average over these eleven tasks, and we treat it as a diagnostic to be read alongside the per-benchmark and per-domain views rather than as a model-quality metric. As a secondary safeguard we evaluate eleven standard language-understanding tasks with the LM Evaluation Harness~\citep{eval-harness} following \citet{nguyen2025mixturevitae_arxiv}, listed with shot counts in \Cref{tab:eval_settings_general}. Those runs are single seed, so the language results carry no error bars.
+
+\textbf{Two evaluation protocols.} Protocol~A decodes greedily on all eleven benchmarks under one fixed generation budget, which is what makes thirteen model families and three decoding seeds comparable, and it covers Phase 1, the factorial, and the mixture ablations. Protocol~B uses sampled decoding and longer generation budgets on several benchmarks, because models that have received reasoning post-training emit long chains of thought that a short greedy budget truncates, and it covers every OpenThoughts3 experiment. Full settings are in \Cref{tab:eval-settings-A,tab:eval-settings-B}. The two protocols score the same checkpoint differently, so no number from one is ever compared against a number from the other, and every Protocol~B result is a paired change measured against a starting checkpoint re-evaluated under Protocol~B. Protocol~A results are the mean and sample standard deviation over decoding seeds 42, 1234, and 2025, whose residual variation under greedy decoding comes from batching and kernel nondeterminism in the inference engine. These are decoding seeds and do not estimate variability across independent pre-training runs. Protocol~B results are single seed and carry no error bars.
+
+\textbf{Decontamination and statistics.} The MixtureVitae pre-training data and all shared post-training data are decontaminated against every benchmark reported here with the 13-gram exact-match protocol of \citet{nguyen2025mixturevitae_arxiv}, applied separately to the Tulu3 SFT mixture, the Tulu3 preference data, and the OpenThoughts3 subset. The non-permissive substrates and the external references are used as released and inherit whatever contamination they carry, an asymmetry that favors them and that \Cref{app:decontam} quantifies. Contrasts on the suite average carry 95\% paired item-level bootstrap intervals from 2{,}000 replicates that resample items within each benchmark after averaging over seeds, with Benjamini-Hochberg correction within each contrast family. Because JEEBench awards partial credit, items are treated as scores in $[0,1]$ rather than as Bernoulli outcomes. \Cref{app:stats} gives the full contrast table.
+
+\section{Front-loading versus source licensing}
+\label{sec:factorial}
+
+\input{tables/factorial_summary}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/factorial_main.pdf}
+\caption{\textbf{Front-loading drives the reasoning gain and licensing does not.} Paired bars give the suite average without and with the instruction-and-reasoning subset in pre-training, for each web substrate, after Tulu3 SFT. The permissive substrate is highlighted, and the dashed line marks its front-loaded level so that the substrate contrast at matched front-loading can be read directly. Error bars are the sample standard deviation over three decoding seeds. Language understanding is single seed and measured on the base checkpoints.}
+\label{fig:factorial}
+\end{figure}
+
+\paragraph{Front-loading is the operative variable.}
+\Cref{tab:factorial} and \Cref{fig:factorial} give the design. Adding the instruction-and-reasoning subset to the pre-training mixture raises the reasoning suite average in all eighteen cells, by $10.3$ to $19.2$ points, with every bootstrap interval excluding zero at $q < 0.001$. At 16K after Tulu3 SFT the effect is $+15.5$ points for the permissive substrate ($11.8 \to 27.3$), $+13.9$ for Nemotron-CC-HQ ($8.4 \to 22.3$), and $+14.7$ for FineWeb-Edu ($7.9 \to 22.6$). It is largest at the base stage, near $19$ points for every substrate at 16K, and Phase 1 recovers only part of the deficit its absence creates. Tulu3 contains instruction, mathematics, and code data of its own, and applying it to a base without front-loaded reasoning does not substitute for having pre-trained on it.
+
+\paragraph{Licensing is nearly free on reasoning.}
+Once both pools are front-loaded the substrate contrast largely disappears. At 4K after Tulu3 SFT the permissive substrate leads Nemotron-CC-HQ by $+0.5$ points ($[-1.2, +2.3]$, $q = 0.65$) and FineWeb-Edu by $+0.4$ points ($[-1.3, +1.9]$, $q = 0.66$), both indistinguishable from zero, and at 16K it leads by $+5.0$ ($[+3.2, +7.0]$) and $+4.7$ points ($[+3.0, +6.6]$), both with $q \le 0.001$. The only stage at which a non-permissive substrate is ahead is the 4K base, before any post-training, where it leads by $5.4$ to $7.5$ points. Post-training removes that advantage rather than preserving it.
+
+\paragraph{The mechanism does not depend on licensing.}
+The interaction between the two factors, the front-loading effect on the permissive substrate minus its mean effect on the two non-permissive substrates, is $+0.0$ points at the 16K base ($[-2.0, +2.0]$, $q = 0.97$), $+1.2$ after SFT ($[-0.8, +3.2]$, $q = 0.28$), and $+1.9$ after DPO ($[-0.1, +4.0]$, $q = 0.10$), none distinguishable from zero. The effect is the same size wherever it is applied, which is what supports reading front-loading as the mechanism and licensing as a separate constraint.
+
+\paragraph{The gains are broad.}
+Averaged over the three substrates at 16K after SFT, front-loading is worth $+23.0$ points on code, $+15.6$ on mathematics, $+10.4$ on instruction following, and $+2.5$ on science and knowledge-intensive question answering (\Cref{fig:domains}), and instruction following improves in all twelve post-training cells, by $7.7$ to $17.5$ points. Because an unweighted average over five mathematics and three code benchmarks implicitly weights those domains at 45\% and 27\%, we recompute both headline quantities under an equal-domain average and with each domain removed in turn, and neither changes materially (\Cref{tab:domain_robustness}).
+
+\paragraph{Language understanding is where the constraint is not free.}
+Front-loading also helps general language understanding, by $+5.0$ points for the permissive substrate ($50.8 \to 55.8$ at 16K) and $+5.2$ for FineWeb-Edu ($57.4 \to 62.6$), though only $+0.5$ for Nemotron-CC-HQ, which already contains synthetically rephrased question-and-answer text and starts much higher. The instructive detail is what the non-front-loaded models cannot do. Without the subset, FineWeb-Edu and the permissive substrate score $26.1$ and $25.8$ on 5-shot MMLU and $21.1$ and $22.4$ on 10-shot CommonsenseQA, which is chance on both, and front-loading lifts them to $47.5$ and $38.7$ on MMLU and $55.7$ and $48.7$ on CommonsenseQA. Whatever else instruction and reasoning data supplies, it supplies the ability to answer a benchmark in the format the benchmark asks for.
+
+It does not, however, close the substrate gap. At matched front-loading the permissive substrate reaches $55.8$ against $64.6$ for Nemotron-CC-HQ and $62.6$ for FineWeb-Edu, a residual $6.8$ to $8.8$ points that front-loading does not recover in our design. Permissiveness is close to free on the capabilities post-training targets and is not free on broad language coverage.
+
+\section{Post-training across the model zoo}
+\label{sec:zoo}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/phase1_zoo.pdf}
+\caption{\textbf{Phase 1 trajectories, Protocol~A.} Left, matched-compute bases trained on 300B tokens under the \texttt{open-sci-ref} protocol. Right, the same permissive model against open-weights references trained on 36 to 120 times more tokens, shown as uncontrolled upper references. Error bars are the sample standard deviation over three decoding seeds. Per-benchmark values are in \Cref{tab:phase1_zoo}.}
+\label{fig:zoo}
+\end{figure}
+
+\input{tables/phase1_zoo}
+
+\paragraph{The factorial result survives the wider comparison.}
+\Cref{fig:zoo} and \Cref{tab:phase1_zoo} place the front-loaded permissive model against the bases the community actually trains on. After Phase 1 at 16K it reaches $27.8$, against $12.3$ for Comma0.1, $8.6$ for Nemotron-CC-HQ, and $8.5$ for FineWeb-Edu at the same 300B budget, and $7.7$ for DCLM at 4K. Comma0.1 is the informative comparison, since it is permissively licensed but not reasoning enriched, and it sits with the non-permissive references rather than with the front-loaded model. Licensing does not predict the ranking and composition does. Against the external references it exceeds SmolLM2 at 16K ($19.1$) and Qwen2.5 ($25.4$) and trails Qwen3 ($31.7$), which uses 120 times the tokens and whose pre-training already includes reasoning traces.
+
+\paragraph{Short-context alignment erodes long-context reasoning.}
+The permissive 16K model is strongest before Phase 1, at $30.7$, and Tulu3 SFT lowers it to $27.3$, with DPO recovering to $27.8$ but not to the base level. This is a degradation of an unusually strong post-extension base rather than a weak post-trained model, since the result still leads every matched-compute reference by more than 15 points. The natural reading is that the short-context-dominated Tulu3 mixture partially overwrites reasoning behavior that long-context extension and reasoning-rich pre-training installed, and \Cref{sec:receptivity} tests that reading directly. The same pattern is visible for Qwen3, whose base leads its own post-trained checkpoints on MATH500, so it is not specific to one mixture.
+
+\paragraph{Which subset carries the signal.}
+A mixture-composition ablation at a 100B-token budget isolates the two largest subsets of the permissive mixture (\Cref{tab:evalchemy_table1,tab:lang_eval_table1}). Removing the instruction-and-reasoning subset collapses the post-trained model to a suite average of 6 to 9 across contexts and stages, well below the full mixture, and Tulu3 does not repair it, which is the 100B counterpart of the front-loading effect in \Cref{sec:factorial}. Removing the curated web subset instead leaves both axes close to the full mixture and on several benchmarks above it, and costs about a point of mean accuracy on language understanding. At this budget the reasoning and instruction core carries most of the post-training signal and the web portion contributes comparatively little, though we state this only for the scale and budget tested.
+
+\section{Receptivity to reasoning post-training}
+\label{sec:receptivity}
+
+Everything in this section is measured under Protocol~B at a single seed, so every number below is a change from a starting checkpoint re-evaluated under that protocol rather than a score comparable with \Cref{sec:factorial,sec:zoo}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/phase2_receptivity.pdf}
+\caption{\textbf{Only the front-loaded permissive base converts a small reasoning budget into gains.} Left, change in suite average under identical OpenThoughts3-30K post-training, measured for each model from its own Tulu3 SFT checkpoint, except MixtureVitae, which is measured from its post-YaRN base. Right, change in MATH500 when the Tulu3 SFT checkpoint of five bases receives 30K samples from one of four reasoning corpora, with 95\% paired bootstrap intervals over the same 500 problems. Protocol~B, single seed.}
+\label{fig:receptivity}
+\end{figure}
+
+\paragraph{A small reasoning budget helps one base and harms the rest.}
+Under an identical 30K-sample OpenThoughts3 update, the front-loaded permissive base is the only model in our study whose suite average rises, by $+3.6$ points from its post-YaRN base (\Cref{fig:receptivity}, \Cref{tab:phase2_endpoints}). Every other base declines from its own starting checkpoint, by $-1.3$ for Qwen2.5, $-2.4$ for FineWeb-Edu, $-2.8$ for Nemotron-CC-HQ, $-4.3$ for SmolLM2, $-5.0$ for Comma0.1, and $-19.3$ for Qwen3. We read Qwen3's decline as reduced susceptibility at a budget this small, since a recipe or budget mismatch would produce the same signature. The same update also recovers the long-context mathematics performance that Phase 1 erodes in \Cref{sec:zoo}, and does so from the base checkpoint without any Tulu3 stage, which supports reading that erosion as short-context interference.
+
+\paragraph{Removing the reasoning traces from pre-training removes the receptivity.}
+\Cref{tab:ot3_pretrain_ablation} isolates this at the full 300B budget. Two models differ only in whether the OpenThoughts3 subset is present in pre-training, and both receive identical reasoning post-training. With it the suite average reaches $33.6$, and without it the same post-training reaches $23.9$, below the level the intact base already had before any reasoning update. The gap is $31.8$ points on MATH500, $30.0$ on AMC23, and $19.5$ on HumanEval, and AIME24 and AIME25 fall from $11.7$ and $10.0$ to exactly zero. Post-training amplified a capability that pre-training had laid down, and where it had not there was nothing to amplify.
+
+\input{tables/ot3_pretrain_ablation}
+
+\paragraph{The effect is not an artifact of training twice on the same corpus.}
+Because OpenThoughts3 traces are present in the permissive pre-training mixture, its gain under OpenThoughts3 post-training could reflect re-exposure rather than receptivity. \Cref{tab:heldout_reasoning} holds the intervention fixed and changes only the identity of the reasoning corpus. From the Tulu3 SFT checkpoint the permissive base gains $+35.4$ points of MATH500 under OpenThoughts3 and $+34.2$, $+31.6$, and $+16.4$ under AceReason, Nemotron-Cascade, and Superior-Reasoning, three corpora that are not named sources in any pre-training mixture here, with every interval excluding zero. No matched-compute reference responds positively to any of the four, and SmolLM2, which is neither compute matched nor trained under our recipe, responds to three of the four roughly three to five times more weakly, and not at all to OpenThoughts3. Receptivity is therefore a property of the base rather than of the post-training corpus, although the corpus shapes the profile of the gain, with Superior-Reasoning improving mathematics while regressing code and instruction following enough to lower the average (\Cref{tab:heldout_mv_grid}).
+
+\input{tables/heldout_reasoning}
+
+\paragraph{What reasoning post-training costs.}
+Instruction following is a control here rather than a target, and it declines under every reasoning update, since the post-training data contains none. Running DPO before the reasoning stage largely preserves it, at $43.0$ against $45.0$ before. General language understanding does not degrade, reading $56.0$ after the reasoning update from either starting point against $55.0$ through Phase 1 (\Cref{tab:lang_eval_table2,tab:lang_eval_ot3_phase2}). More broadly the average over the non-mathematics benchmarks falls in most of these runs, so the gain from a small reasoning budget is real but concentrated, and is bought at a measurable cost in instruction following rather than in general language.
+
+\section{Related work}
+\label{sec:related_work}
+
+\textbf{Permissive pre-training corpora.} CommonCorpus~\citep{langlais2025commoncorpus} assembles roughly 2T tokens of uncopyrighted and permissively licensed text, and CommonPile~\citep{kandpal2025commonpilev018tb_arxiv} builds pre-training corpora exclusively from permissively licensed sources. MixtureVitae~\citep{nguyen2025mixturevitae_arxiv} showed that much of the gap to mixed-license corpora closes at the base-model stage when a large instruction and reasoning fraction is included, and SYNTH~\citep{synthpleias2025} pursues a related synthetic route. None of these varies licensing and composition independently, which is what this paper adds.
+
+\textbf{Quality-filtered web corpora.} FineWeb-Edu~\citep{penedo2024fineweb} filters for educational value, and Nemotron-CC~\citep{su2025nemotroncctransformingcommoncrawl} combines classifier ensembles with synthetic rephrasing. The \texttt{open-sci-ref} protocol~\citep{nezhurina2025opensciref} established the reference recipe we use and identified Nemotron-CC-HQ~\citep{blakeman2025nemotron} as the strongest such corpus, ahead of DCLM~\citep{li2024datacomplm} and FineWeb-Edu.
+
+\textbf{Instruction and reasoning data in pre-training.} Phi-1~\citep{gunasekar2023phi1} showed that textbook-quality and synthetic exercise data can carry a small model to strong code performance. Front-Loaded Reasoning~\citep{akter2025front} makes the pre-training-side case that reasoning data introduced early establishes capabilities that later supervised fine-tuning cannot fully replicate, and PRISM~\citep{runwal2026prism} and \citet{zhang2026interplay} reach compatible conclusions from mid-training. Our design differs in three ways that matter for attribution. Pre-training here is single stage, so no stage boundary, schedule change, or curriculum shift co-varies with the mixture. Pre-training and all shared post-training data are decontaminated against every reported benchmark, which matters because front-loading mathematics and code is the regime where leakage is most likely. And licensing is varied rather than held implicitly fixed at non-permissive.
+
+\textbf{Post-training recipes.} OpenThoughts~\citep{guha2025openthoughts} provides the reasoning traces and the recipe we use, and Tulu3~\citep{lambert2024tulu} the instruction alignment recipe including DPO~\citep{rafailov2023direct}. LIMA~\citep{zhou2023lima} and LIMO~\citep{yelimo} argue that small post-training sets can elicit instruction following and mathematical reasoning from a well-pre-trained base, an amplification account they motivate but do not test by varying pre-training. A separate line induces reasoning through reinforcement learning with verifiable rewards or test-time scaling~\citep{guo2025deepseek,yu2025dapo,muennighoff2025s1}. Those papers vary the post-training algorithm or data. We hold post-training fixed and vary the pre-training mixture.
+
+\section{Conclusion and limitations}
+\label{sec:limitations}
+
+Asked what a base model must contain for post-training to succeed, this design answers with the pre-training mixture rather than the pre-training licence. Front-loading is worth 10 to 19 points of reasoning suite average in every cell of a 300B-token factorial, works equally well on permissive and non-permissive substrates, and helps broadly across mathematics, code, and instruction following. Under a permissive-data constraint the mechanism stays available essentially in full on the capabilities post-training targets and incomplete on general language coverage. For a community that wants to share data, recipes, and checkpoints without legal friction, that constraint is affordable, and composition rather than licensing is where the capability is decided.
+
+
+\textbf{Scale and substrate.} All factorial results are at 1.7B parameters and 300B tokens, with a 0.4B cross-check in \Cref{app:smallscale}, and the licensing factor has a single permissive level, so ``permissive'' here means MixtureVitae specifically. The same factorial at 7B and above, with CommonPile and CommonCorpus added as further levels, would turn a two-level contrast into a properly sampled factor and test whether the near-zero licensing penalty survives scale. This is the most valuable follow-up and the one we can least afford.
+
+\textbf{Post-training family.} We test Tulu3 SFT and DPO and a 30K-sample reasoning update, without Tulu3's reinforcement learning stage. Concluding that a weak mixture is genuinely unrecoverable would need exactly the regimes we omit, namely reinforcement learning with verifiable rewards and larger reasoning budgets, so we claim only that the deficit is not recovered under the recipes tested.
+
+\textbf{Measurement and coverage.} Our intervals describe evaluation variability conditional on fixed checkpoints, so separating mixture effects from initialization variance needs replicate pre-training runs. The suite omits multilinguality, long-context retrieval, and tool use.
+
+\textbf{The language gap is open.} Front-loading does not close the substrate gap on general language understanding, and whether targeted composition on a permissive substrate can is the most direct follow-up to the one negative result in this paper.
+
+\bibliographystyle{plainnat}
+\bibliography{add_reference,references}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\input{checklist.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+\begin{appendix}
+\crefalias{section}{appendix}
+\crefalias{subsection}{appendix}
+
+\begin{center}
+{\Large\bf Appendix}
+\end{center}
+
+\section*{Broader impact}
+Our work provides evidence that permissively licensed pre-training data does not preclude strong post-training, which lowers the legal and practical barriers to sharing pre-training corpora, post-training recipes, and checkpoints. This favors transparency and reproducibility in a part of the field where both are scarce. The same finding makes capable models easier to build and to release, and the usual dual-use considerations for open model releases apply unchanged.
+
+\input{appendix/statistics}
+
+\input{appendix/additional_results}
+
+\section{Experimental setup details}
+\label{appendix:exp_details}
+
+\input{appendix/opensciref}
+
+\input{appendix/reasoning_eval_settings}
+
+\input{appendix/benchmarking}
+
+\input{appendix/decontamination}
+
+\end{appendix}
+
+\end{document}

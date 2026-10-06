@@ -1,0 +1,26 @@
+\section{Decontamination}
+\label{app:decontam}
+
+Front-loading mathematics, code, and reasoning traces into pre-training is the regime in which benchmark leakage is most likely, so the decontamination control matters for every claim in this paper.
+
+\paragraph{Procedure.}
+The MixtureVitae pre-training corpus and all shared post-training data are decontaminated
+against every benchmark reported here using the 13-gram exact-match protocol
+of \citet{nguyen2025mixturevitae_arxiv}. Decontamination is applied separately to the
+pre-training corpus, to the Tulu3 SFT mixture, to the Tulu3 preference data, and to the
+30K OpenThoughts3 subset used for reasoning post-training. Because the same decontaminated
+post-training data is used for every model, no model in the comparison receives an
+advantage from post-training-side leakage.
+
+\paragraph{An asymmetry that favors the references.}
+The non-permissive substrates and the external open-weights references are used as
+released and inherit whatever contamination their own pre-training carries. We could not
+decontaminate them without retraining them, so the comparison is asymmetric in their
+favor, and any residual leakage in those corpora inflates their scores rather than ours.
+
+\paragraph{Effect on the reported numbers.}
+Tables~\ref{tab:evalchemy_table3} and~\ref{tab:lang_eval_table3} compare decontaminated
+against non-decontaminated 300B checkpoints. The largest movement is at the 4K base stage,
+where decontamination costs about three points of reasoning suite average, while the 4K post-trained scores move by well under a point and the 16K post-trained scores are higher after decontamination, by $2.4$ points after SFT and $3.9$ after DPO. Language understanding is unchanged within
+rounding. Decontamination therefore removes a measurable but small part of the base-stage
+score and does not account for the post-training differences this paper reports.

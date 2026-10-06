@@ -1,0 +1,54 @@
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usetikzlibrary{positioning,arrows.meta,calc,fit}
+
+\begin{document}
+\definecolor{mvdark}{HTML}{C0552B}
+\definecolor{mvlight}{HTML}{F7DFCE}
+\definecolor{refdark}{HTML}{3D5A80}
+\definecolor{reflight}{HTML}{DCE5EE}
+\definecolor{neutral}{HTML}{6E6E6E}
+\definecolor{neutrallight}{HTML}{ECECEC}
+
+\begin{tikzpicture}[
+    every node/.style={font=\sffamily},
+    box/.style={
+        draw, rounded corners=5pt, line width=0.9pt,
+        text centered, align=center, minimum height=1.35cm, text width=3.05cm,
+        font=\sffamily\small
+    },
+    greybox/.style={box, fill=neutrallight, draw=neutral},
+    refbox/.style={box, fill=reflight, draw=refdark},
+    mvbox/.style={box, fill=mvlight, draw=mvdark},
+    arr/.style={-{Stealth[length=6pt,width=5pt]}, line width=1.1pt, draw=neutral},
+    phaselab/.style={font=\sffamily\small\itshape, color=neutral},
+    optmark/.style={font=\sffamily\footnotesize, color=neutral},
+]
+
+% ---------- backbone ----------
+\node[greybox] (pre) {Pre-training\\[1pt]\footnotesize 300B tokens, 4K};
+\node[refbox, right=0.85cm of pre] (yarn) {Long-context\\extension\\[1pt]\footnotesize YaRN, 16K};
+\node[refbox, right=0.85cm of yarn] (sft) {Instruction SFT\\[1pt]\footnotesize Tulu3};
+\node[refbox, right=0.85cm of sft] (dpo) {Preference\\optimisation\\[1pt]\footnotesize DPO, Tulu3};
+\node[mvbox, right=0.85cm of dpo] (ot3) {Reasoning SFT\\[1pt]\footnotesize OpenThoughts3, 30K};
+
+\draw[arr] (pre) -- (yarn);
+\draw[arr] (yarn) -- (sft);
+\draw[arr] (sft) -- (dpo);
+\draw[arr] (dpo) -- (ot3);
+
+% ---------- optional-stage markers ----------
+\foreach \n in {yarn,sft,dpo}{%
+  \node[optmark, anchor=north east] at ($(\n.north east)+(-0.08,-0.02)$) {$\dagger$};
+}
+
+% ---------- phase labels above ----------
+% Both labels share one y coordinate and one anchor, so they cannot drift apart.
+\coordinate (phaserow) at ($(sft.north) + (0,0.34)$);
+\coordinate (p1x) at ($(sft.north)!0.5!(dpo.north)$);
+\node[phaselab, anchor=south] at (p1x |- phaserow) {Phase 1: instruction alignment};
+\node[phaselab, anchor=south] at (ot3.north |- phaserow) {Phase 2: reasoning post-training};
+
+\end{tikzpicture}
+\end{document}

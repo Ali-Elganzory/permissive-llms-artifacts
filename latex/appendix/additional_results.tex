@@ -1,0 +1,100 @@
+\section{Additional results}
+\label{app:additional}
+
+\subsection{The 300B factorial in full}
+\label{app:factorial}
+
+Table~\ref{tab:factorial_perbenchmark} gives the per-benchmark values behind
+Section~\ref{sec:factorial} for all thirty-six evaluated checkpoints, and
+Table~\ref{tab:factorial_language} gives the language-understanding suite for the twelve
+distinct pre-training runs. Two patterns in the language table are worth naming. Without
+front-loading, FineWeb-Edu and the permissive substrate score at chance on both 5-shot
+MMLU and 10-shot CommonsenseQA, and front-loading moves them well above it, so part of
+what instruction and reasoning data supplies is the ability to answer a benchmark in the
+format it asks for. Nemotron-CC-HQ is the exception, retaining $46.4$ on MMLU and $48.6$
+on CommonsenseQA without front-loading, which is consistent with its construction from
+classifier-filtered and synthetically rephrased web text and explains why it gains least
+from the subset.
+
+Figure~\ref{fig:fl_trajectory} shows how the front-loading effect evolves across
+post-training stages. It is largest at the base stage and shrinks under Phase 1 without
+disappearing, which is the same statement as the observation in Section~\ref{sec:factorial}
+that Tulu3 recovers only part of the deficit created by omitting the subset.
+Figure~\ref{fig:domains} decomposes the effect by capability domain. Table~\ref{tab:phase1_zoo_full} gives both context variants for every model in the zoo, of which Table~\ref{tab:phase1_zoo} in the main text shows one per family.
+
+\input{tables/phase1_zoo_full}
+
+\input{tables/factorial_perbenchmark}
+
+\input{tables/factorial_language}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/frontloading_trajectory.pdf}
+\caption{Front-loading effect on the reasoning suite average across post-training stages,
+with 95\% paired item-level bootstrap intervals. Protocol~A.}
+\label{fig:fl_trajectory}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/frontloading_domains.pdf}
+\caption{Front-loading effect by capability domain after Tulu3 SFT. The gain is broad
+rather than confined to mathematics, and instruction following improves for every
+substrate. Protocol~A.}
+\label{fig:domains}
+\end{figure}
+
+\subsection{Reasoning post-training endpoints}
+\label{app:phase2}
+
+Table~\ref{tab:phase2_endpoints} gives the per-benchmark endpoints behind
+Figure~\ref{fig:receptivity}, with each block's first row the starting checkpoint that the
+OpenThoughts3-30K run was initialised from and re-evaluated under Protocol~B, so that
+every comparison inside the table is paired. Table~\ref{tab:heldout_mv_grid} gives the
+full held-out reasoning grid, four reasoning corpora applied from three starting
+checkpoints with recipe, sample budget, and epoch count held fixed. Two observations that
+the compact main-text version omits. Superior-Reasoning is a mixed control rather than a
+failure, improving mathematics substantially while regressing code and instruction
+following enough to lower the suite average from every starting point. And the DPO
+starting point is the one that preserves instruction following through reasoning
+post-training, ending at $43.0$ on IFEval against $45.0$ before the update, where the SFT
+starting point falls to $25.6$.
+
+\input{tables/phase2_endpoints}
+
+\input{tables/heldout_mv_grid}
+
+\subsection{Mixture composition at a 100B budget}
+\label{app:mixture100b}
+
+Tables~\ref{tab:evalchemy_table1} and~\ref{tab:lang_eval_table1} give the per-benchmark
+values behind the mixture-composition ablation of Section~\ref{sec:zoo}, in which two
+ablated variants of the permissive mixture are pre-trained at 100B tokens and passed
+through the same Phase 1 pipeline. Removing the instruction-and-reasoning subset collapses
+performance across mathematics, code, and reasoning at both context lengths, with AIME24
+and AIME25 at zero, MATH500 below three, and suite averages of $6.1$ to $8.5$ at 4K and
+$6.7$ to $7.5$ at 16K, and Tulu3 SFT does not repair it. Removing the curated web subset
+behaves very differently, reaching $18.6$ at the 4K base and $16.1$ to $17.5$ after Phase
+1, never below the full mixture and above it on MATH500, AMC23, HumanEval, and MBPP. On
+language understanding the web ablation costs about a point, $49.0$ to $50.0$ mean
+accuracy against $50.0$ to $51.0$ for the full mixture, while the instruction ablation
+costs 4 to 5 points that Phase 1 does not close. We state this for the scale and budget
+tested and do not generalise it.
+
+\subsection{Smaller scale check at 0.4B}
+\label{app:smallscale}
+
+Tables~\ref{tab:evalchemy_table4} and~\ref{tab:lang_eval_table4} compare a 0.4B permissive
+model against Baguettotron, a 0.32B model trained on the PleIAs SYNTH
+mix~\citep{synthpleias2025}, under the same Phase 1 pipeline. The permissive model reaches $12.1$ reasoning suite average after DPO against $6.2$ for Baguettotron, with HumanEval and
+MBPP pass@1 of $15.3$ and $22.6$ against near zero, and $45.0$ against $42.0$ to $43.0$
+mean accuracy on the language suite. The decontamination status of the SYNTH mix is
+undocumented while our model is decontaminated against every benchmark reported here, so
+some part of Baguettotron's score may reflect train and test overlap that we cannot rule
+out from outside the release. This comparison is a sanity check on the direction of the
+effect at a second scale and not a scaling result.
+
+\input{tables/reasoning_draft}
+
+\input{tables/language_draft}

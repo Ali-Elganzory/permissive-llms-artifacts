@@ -1,0 +1,213 @@
+\begin{table}[htbp]
+\centering
+\caption{Per-benchmark results for the 100B token MixtureVitae mixture composition ablation on the standard language understanding suite. Removing the instruction and reasoning subset creates a persistent language gap that Phase 1 does not close, whereas removing the curated web subset leaves language performance close to the full mixture across stages and both context lengths. Bold marks the column maximum.}
+\label{tab:lang_eval_table1}
+\scriptsize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrrrrrrrrr}
+\toprule
+\textbf{Model} & \textbf{ARC-C} & \textbf{ARC-E} & \textbf{BoolQ} & \textbf{CSQA} & \textbf{COPA} & \textbf{HellaS} & \textbf{LAMBADA} & \textbf{MMLU} & \textbf{OBQA} & \textbf{PIQA} & \textbf{WinoG} & \textbf{Avg} \\
+\midrule
+MV-noinstruct & 32.0 & 61.0 & 58.0 & 18.0 & 66.0 & 46.0 & 46.0 & 25.0 & 33.0 & 68.0 & 55.0 & 46.0 \\
+\quad $\to$SFT & 32.0 & 61.0 & 57.0 & 19.0 & 66.0 & 46.0 & \textbf{47.0} & 25.0 & 33.0 & 68.0 & 55.0 & 46.0 \\
+\quad $\to$SFT $\to$DPO & 32.0 & 61.0 & 57.0 & 19.0 & 66.0 & 47.0 & \textbf{47.0} & 25.0 & 33.0 & 68.0 & 55.0 & 46.0 \\
+\midrule
+\addlinespace[0.3em]
+MV-noinstruct-16k & 33.0 & 60.0 & 63.0 & 19.0 & 69.0 & 46.0 & \textbf{47.0} & 25.0 & 33.0 & 67.0 & 55.0 & 47.0 \\
+\quad $\to$SFT & 31.0 & 60.0 & 61.0 & 18.0 & 67.0 & 46.0 & \textbf{47.0} & 25.0 & 33.0 & 67.0 & 56.0 & 46.0 \\
+\quad $\to$SFT $\to$DPO & 31.0 & 60.0 & 61.0 & 18.0 & 67.0 & 47.0 & \textbf{47.0} & 25.0 & 32.0 & 67.0 & 56.0 & 46.0 \\
+\midrule
+\addlinespace[0.3em]
+MV-noweb & 34.0 & \textbf{65.0} & 67.0 & 35.0 & 67.0 & 46.0 & 39.0 & 31.0 & 33.0 & 68.0 & 56.0 & 49.0 \\
+\quad $\to$SFT & 33.0 & 63.0 & 65.0 & 35.0 & 69.0 & 47.0 & 41.0 & \textbf{33.0} & 32.0 & 67.0 & 55.0 & 49.0 \\
+\quad $\to$SFT $\to$DPO & 33.0 & 63.0 & 65.0 & 35.0 & 69.0 & 47.0 & 41.0 & \textbf{33.0} & 32.0 & 67.0 & 55.0 & 49.0 \\
+\midrule
+\addlinespace[0.3em]
+MV-noweb-16k & \textbf{36.0} & \textbf{65.0} & 70.0 & \textbf{37.0} & \textbf{70.0} & 45.0 & 40.0 & 32.0 & 32.0 & 67.0 & 56.0 & 50.0 \\
+\quad $\to$SFT & 33.0 & 63.0 & 66.0 & 34.0 & 69.0 & 46.0 & 41.0 & \textbf{33.0} & 33.0 & 67.0 & 56.0 & 49.0 \\
+\quad $\to$SFT $\to$DPO & 33.0 & 63.0 & 67.0 & 34.0 & 69.0 & 47.0 & 41.0 & \textbf{33.0} & 33.0 & 67.0 & 56.0 & 49.0 \\
+\midrule
+\addlinespace[0.3em]
+MV & 34.0 & \textbf{65.0} & \textbf{71.0} & 31.0 & 67.0 & 48.0 & 44.0 & 32.0 & \textbf{34.0} & 68.0 & 58.0 & 50.0 \\
+\quad $\to$SFT & 34.0 & 64.0 & \textbf{71.0} & 32.0 & 69.0 & \textbf{49.0} & 45.0 & \textbf{33.0} & \textbf{34.0} & \textbf{69.0} & 58.0 & \textbf{51.0} \\
+\quad $\to$SFT $\to$DPO & 34.0 & 64.0 & \textbf{71.0} & 32.0 & \textbf{70.0} & \textbf{49.0} & 45.0 & \textbf{33.0} & 33.0 & \textbf{69.0} & 58.0 & \textbf{51.0} \\
+\midrule
+\addlinespace[0.3em]
+MV-16k & 35.0 & \textbf{65.0} & 68.0 & 30.0 & 67.0 & 47.0 & 45.0 & \textbf{33.0} & 33.0 & 68.0 & 57.0 & 50.0 \\
+\quad $\to$SFT & 33.0 & 64.0 & 69.0 & 29.0 & 68.0 & \textbf{49.0} & 45.0 & 32.0 & 33.0 & 68.0 & \textbf{59.0} & 50.0 \\
+\quad $\to$SFT $\to$DPO & 33.0 & 64.0 & 69.0 & 30.0 & 68.0 & \textbf{49.0} & 45.0 & 32.0 & 33.0 & 68.0 & \textbf{59.0} & 50.0 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+
+\begin{table}[htbp]
+\centering
+\caption{Full language suite results for the main 1.7B comparison. Phase 1 Tulu3 SFT/DPO leaves language scores largely unchanged, with MixtureVitae matching FineWeb-Edu, trailing Nemotron, and remaining below the more heavily pretrained external baselines. Bold marks the column maximum.}
+\label{tab:lang_eval_table2}
+\resizebox{\textwidth}{!}{%
+\scriptsize
+\begin{tabular}{lrrrrrrrrrrrr}
+\toprule
+Model & ARC-C & ARC-E & BoolQ & CSQA & COPA & HellaS & LAMBADA & MMLU & OBQA & PIQA & WinoG & Avg  \\
+\midrule
+Comma0.1-300BT       & 36.0 & 63.0 & 62.0 & 21.0 & 71.0 & 53.0 & 54.0 & 27.0 & 33.0 & 71.0 & 60.0 & 50.0 \\
+\quad $\to$SFT & 37.0 & 65.0 & 64.0 & 20.0 & 74.0 & 54.0 & 57.0 & 27.0 & 33.0 & 72.0 & 61.0 & 51.0 \\
+\quad $\to$SFT $\to$DPO & 37.0 & 65.0 & 65.0 & 20.0 & 74.0 & 54.0 & 57.0 & 27.0 & 33.0 & 72.0 & 61.0 & 51.0 \\
+\midrule
+\addlinespace[0.3em]
+MV          & 40.0 & 71.0 & 74.0 & 51.0 & 71.0 & 54.0 & 48.0 & 42.0 & 34.0 & 70.0 & 58.0 & 56.0 \\
+\quad $\to$SFT & 39.0 & 70.0 & 73.0 & 50.0 & 70.0 & 56.0 & 50.0 & 43.0 & 34.0 & 70.0 & 58.0 & 56.0 \\
+\quad $\to$SFT $\to$DPO & 39.0 & 70.0 & 73.0 & 50.0 & 71.0 & 56.0 & 50.0 & 43.0 & 34.0 & 70.0 & 58.0 & 56.0 \\
+\midrule
+\addlinespace[0.3em]
+MV-16k          & 42.0 & 71.0 & 73.0 & 49.0 & 67.0 & 53.0 & 49.0 & 41.0 & 32.0 & 70.0 & 58.0 & 55.0 \\
+\quad $\to$SFT & 39.0 & 70.0 & 73.0 & 50.0 & 69.0 & 55.0 & 50.0 & 42.0 & 34.0 & 70.0 & 57.0 & 55.0 \\
+\quad $\to$SFT $\to$DPO & 39.0 & 71.0 & 73.0 & 50.0 & 69.0 & 55.0 & 50.0 & 42.0 & 34.0 & 70.0 & 57.0 & 55.0 \\
+\midrule
+\addlinespace[0.3em]
+Qwen2.5-1.5B       & \textbf{54.0} & 81.0 & 78.0 & 76.0 & 83.0 & 68.0 & 62.0 & 61.0 & 40.0 & 77.0 & 63.0 & \textbf{68.0} \\
+\quad $\to$SFT & 51.0 & 79.0 & 70.0 & \textbf{77.0} & 82.0 & 68.0 & 60.0 & 60.0 & 40.0 & 77.0 & 63.0 & 66.0 \\
+\quad $\to$SFT $\to$DPO & 52.0 & 79.0 & 70.0 & 76.0 & 82.0 & 68.0 & 60.0 & 60.0 & 39.0 & 77.0 & 63.0 & 66.0 \\
+\midrule
+\addlinespace[0.3em]
+Qwen3-1.7B       & \textbf{54.0} & \textbf{82.0} & \textbf{83.0} & 76.0 & 82.0 & 67.0 & 63.0 & \textbf{63.0} & 38.0 & 76.0 & 64.0 & \textbf{68.0} \\
+\quad $\to$SFT & 53.0 & 81.0 & 82.0 & \textbf{77.0} & 80.0 & 68.0 & 61.0 & \textbf{63.0} & 39.0 & 76.0 & 64.0 & \textbf{68.0} \\
+\quad $\to$SFT $\to$DPO & 53.0 & 81.0 & \textbf{83.0} & \textbf{77.0} & 80.0 & 68.0 & 61.0 & \textbf{63.0} & 39.0 & 76.0 & 64.0 & \textbf{68.0} \\
+\midrule
+\addlinespace[0.3em]
+SmolLM2-1.7B       & \textbf{54.0} & 80.0 & 75.0 & 60.0 & 82.0 & 73.0 & 67.0 & 50.0 & \textbf{44.0} & \textbf{79.0} & \textbf{67.0} & 66.0 \\
+\quad $\to$SFT & 53.0 & 80.0 & 75.0 & 61.0 & \textbf{85.0} & \textbf{74.0} & \textbf{69.0} & 49.0 & 43.0 & \textbf{79.0} & \textbf{67.0} & 67.0 \\
+\quad $\to$SFT $\to$DPO & \textbf{54.0} & 80.0 & 75.0 & 61.0 & \textbf{85.0} & \textbf{74.0} & \textbf{69.0} & 49.0 & 43.0 & \textbf{79.0} & \textbf{67.0} & 67.0 \\
+\midrule
+\addlinespace[0.3em]
+FineWeb-Edu-300BT & 48.0 & 77.0 & 65.0 & 21.0 & 82.0 & 67.0 & 56.0 & 26.0 & 42.0 & 77.0 & 62.0 & 57.0 \\
+\quad $\to$SFT & 48.0 & 79.0 & 66.0 & 20.0 & 83.0 & 68.0 & 59.0 & 27.0 & 42.0 & 77.0 & 63.0 & 57.0 \\
+\quad $\to$SFT $\to$DPO & 48.0 & 78.0 & 66.0 & 20.0 & 83.0 & 68.0 & 59.0 & 27.0 & 42.0 & 77.0 & 63.0 & 57.0 \\
+\midrule
+\addlinespace[0.3em]
+Nemotron       & 52.0 & 81.0 & 77.0 & 49.0 & \textbf{85.0} & 71.0 & 58.0 & 46.0 & 42.0 & \textbf{79.0} & 65.0 & 64.0 \\
+\quad $\to$SFT & 48.0 & 79.0 & 74.0 & 46.0 & 82.0 & 70.0 & 58.0 & 43.0 & 43.0 & 78.0 & 65.0 & 62.0 \\
+\quad $\to$SFT $\to$DPO & 48.0 & 79.0 & 74.0 & 46.0 & 82.0 & 71.0 & 59.0 & 43.0 & 43.0 & 78.0 & 65.0 & 63.0 \\
+\midrule
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+
+\begin{table}[htbp]
+\centering
+\caption{Language suite comparison between decontaminated and non-decontaminated 300B MixtureVitae checkpoints at 4K and 16K context, before and after Phase 1 Tulu3 SFT/DPO. In contrast to the reasoning suite, the language results are essentially unchanged by decontamination. Bold marks the column maximum.}
+\label{tab:lang_eval_table3}
+\scriptsize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrrrrrrrr}
+\toprule
+\textbf{Base} & \textbf{Model} & \textbf{ARC-C} & \textbf{ARC-E} & \textbf{BoolQ} & \textbf{CSQA} & \textbf{COPA} & \textbf{HellaS} & \textbf{LAMBADA} & \textbf{MMLU} & \textbf{OBQA} & \textbf{PIQA} & \textbf{WinoG} & \textbf{Avg} \\
+\midrule
+\multirow{6}{*}{Not Decontaminated} & MV & 40.0 & \textbf{71.0} & \textbf{75.0} & 49.0 & \textbf{73.0} & 54.0 & 48.0 & 38.0 & 35.0 & 70.0 & 58.0 & \textbf{56.0} \\
+ & \quad $\to$SFT & 39.0 & 70.0 & \textbf{75.0} & 47.0 & 71.0 & 55.0 & \textbf{50.0} & 40.0 & 35.0 & 70.0 & 58.0 & 55.0 \\
+ & \quad $\to$SFT $\to$DPO & 39.0 & 70.0 & \textbf{75.0} & 47.0 & 71.0 & 55.0 & \textbf{50.0} & 40.0 & 35.0 & 70.0 & 58.0 & \textbf{56.0} \\
+\cmidrule{2-14}
+ & MV-16k & 39.0 & \textbf{71.0} & \textbf{75.0} & 50.0 & 72.0 & 54.0 & 49.0 & 38.0 & \textbf{36.0} & \textbf{71.0} & 58.0 & \textbf{56.0} \\
+ & \quad $\to$SFT & 39.0 & \textbf{71.0} & 74.0 & 48.0 & 72.0 & 55.0 & \textbf{50.0} & 38.0 & 35.0 & 70.0 & \textbf{59.0} & 55.0 \\
+ & \quad $\to$SFT $\to$DPO & 39.0 & \textbf{71.0} & 74.0 & 48.0 & 72.0 & 55.0 & \textbf{50.0} & 38.0 & 35.0 & \textbf{71.0} & \textbf{59.0} & \textbf{56.0} \\
+\midrule
+\addlinespace[0.3em]
+\multirow{6}{*}{Decontaminated} & MV & 40.0 & \textbf{71.0} & 74.0 & \textbf{51.0} & 71.0 & 54.0 & 48.0 & 42.0 & 34.0 & 70.0 & 58.0 & \textbf{56.0} \\
+ & \quad $\to$SFT & 39.0 & 70.0 & 73.0 & 50.0 & 70.0 & \textbf{56.0} & \textbf{50.0} & \textbf{43.0} & 34.0 & 70.0 & 58.0 & \textbf{56.0} \\
+ & \quad $\to$SFT $\to$DPO & 39.0 & 70.0 & 73.0 & 50.0 & 71.0 & \textbf{56.0} & \textbf{50.0} & \textbf{43.0} & 34.0 & 70.0 & 58.0 & \textbf{56.0} \\
+\cmidrule{2-14}
+ & MV-16k & \textbf{42.0} & \textbf{71.0} & 73.0 & 49.0 & 67.0 & 53.0 & 49.0 & 41.0 & 32.0 & 70.0 & 58.0 & 55.0 \\
+ & \quad $\to$SFT & 39.0 & 70.0 & 73.0 & 50.0 & 69.0 & 55.0 & \textbf{50.0} & 42.0 & 34.0 & 70.0 & 57.0 & 55.0 \\
+ & \quad $\to$SFT $\to$DPO & 39.0 & \textbf{71.0} & 73.0 & 50.0 & 69.0 & 55.0 & \textbf{50.0} & 42.0 & 34.0 & 70.0 & 57.0 & 55.0 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+
+\begin{table}[htbp]
+\centering
+\caption{Language suite results for the smaller scale comparison between MV (0.4B) and Baguettotron. MV retains a small but consistent advantage across both context lengths and post-training stages, showing that its broader general-purpose edge at small scale is not limited to reasoning tasks. Bold marks the column maximum.}
+\label{tab:lang_eval_table4}
+\scriptsize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrrrrrrrrr}
+\toprule
+\textbf{Model} & \textbf{ARC-C} & \textbf{ARC-E} & \textbf{BoolQ} & \textbf{CSQA} & \textbf{COPA} & \textbf{HellaS} & \textbf{LAMBADA} & \textbf{MMLU} & \textbf{OBQA} & \textbf{PIQA} & \textbf{WinoG} & \textbf{Avg} \\
+\midrule
+Baguettotron & \textbf{33.0} & 58.0 & 61.0 & 19.0 & 56.0 & 36.0 & 30.0 & 27.0 & 31.0 & 61.0 & 53.0 & 42.0 \\
+\quad $\to$SFT & 30.0 & 57.0 & 61.0 & 21.0 & 61.0 & 36.0 & 33.0 & 26.0 & \textbf{32.0} & 61.0 & \textbf{55.0} & 43.0 \\
+\quad $\to$SFT $\to$DPO & 31.0 & 57.0 & 62.0 & 21.0 & 61.0 & 36.0 & 33.0 & 26.0 & \textbf{32.0} & 61.0 & 54.0 & 43.0 \\
+\midrule
+\addlinespace[0.3em]
+Baguettotron 16k & 32.0 & 58.0 & 57.0 & 21.0 & 60.0 & 36.0 & 34.0 & 26.0 & 31.0 & 61.0 & \textbf{55.0} & 43.0 \\
+\quad $\to$SFT & 31.0 & 57.0 & \textbf{64.0} & 20.0 & 61.0 & 36.0 & 33.0 & 26.0 & 31.0 & 61.0 & 54.0 & 43.0 \\
+\quad $\to$SFT $\to$DPO & 31.0 & 57.0 & \textbf{64.0} & 19.0 & 61.0 & 36.0 & 33.0 & 26.0 & \textbf{32.0} & 61.0 & 54.0 & 43.0 \\
+\midrule
+\addlinespace[0.3em]
+MV (0.4B) & 32.0 & \textbf{61.0} & 60.0 & \textbf{26.0} & 63.0 & \textbf{42.0} & 38.0 & 28.0 & 31.0 & \textbf{66.0} & 53.0 & \textbf{45.0} \\
+\quad $\to$SFT & 29.0 & 59.0 & 50.0 & 25.0 & 63.0 & \textbf{42.0} & 40.0 & \textbf{29.0} & 30.0 & 65.0 & 53.0 & 44.0 \\
+\quad $\to$SFT $\to$DPO & 29.0 & 59.0 & 50.0 & \textbf{26.0} & 63.0 & \textbf{42.0} & 40.0 & \textbf{29.0} & 30.0 & 65.0 & 54.0 & 44.0 \\
+\midrule
+\addlinespace[0.3em]
+MV-16k (0.4B) & 32.0 & \textbf{61.0} & 58.0 & \textbf{26.0} & 63.0 & 41.0 & \textbf{41.0} & 28.0 & \textbf{32.0} & 65.0 & 54.0 & \textbf{45.0} \\
+\quad $\to$SFT & 28.0 & 59.0 & 53.0 & 25.0 & \textbf{64.0} & \textbf{42.0} & 40.0 & \textbf{29.0} & 31.0 & 65.0 & \textbf{55.0} & \textbf{45.0} \\
+\quad $\to$SFT $\to$DPO & 28.0 & 59.0 & 54.0 & 25.0 & 63.0 & \textbf{42.0} & \textbf{41.0} & \textbf{29.0} & 31.0 & 65.0 & \textbf{55.0} & \textbf{45.0} \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Language suite results after Phase 2 OpenThoughts3 30K post-training for the models evaluated in the OT3 experiments. Reasoning post-training preserves general language understanding, and MV-16K performs equally well with the full pipeline or with direct OT3 post-training from the post-YaRN base. Bold marks the column maximum.}
+\label{tab:lang_eval_ot3_phase2}
+\resizebox{\textwidth}{!}{%
+\scriptsize
+\begin{tabular}{lrrrrrrrrrrrr}
+\toprule
+\textbf{Model} & ARC-C & ARC-E & BoolQ & CSQA & COPA & HellaS & LAMBADA & MMLU & OBQA & PIQA & WinoG & Avg  \\
+\midrule
+MV-16k & & & & & & & & & & & &  \\
+\quad $\to$SFT $\to$DPO $\to$OT30K                  & 40.0 & 70.0 & 73.0 & 50.0 & 71.0 & 55.0 & 49.0 & 41.0 & 34.0 & 70.0 & 59.0 & 56.0 \\
+\quad $\to$OT30K (\textbf{no Phase 1})        & 43.0 & 71.0 & 74.0 & 49.0 & 69.0 & 54.0 & 49.0 & 42.0 & 33.0 & 70.0 & 59.0 & 56.0 \\
+\midrule
+\addlinespace[0.3em]
+Comma-16k & & & & & & & & & & & &  \\
+\quad $\to$SFT $\to$OT30K                        & 38.0 & 66.0 & 66.0 & 22.0 & 71.0 & 54.0 & 54.0 & 28.0 & 34.0 & 71.0 & 61.0 & 51.0 \\
+\quad $\to$SFT $\to$DPO $\to$OT30K                  & 36.0 & 66.0 & 65.0 & 22.0 & 73.0 & 51.0 & 49.0 & 28.0 & 33.0 & 70.0 & 59.0 & 50.0 \\
+\midrule
+\addlinespace[0.3em]
+FineWeb-Edu-16k & & & & & & & & & & & &  \\
+\quad $\to$SFT $\to$OT30K                        & 47.0 & 79.0 & 70.0 & 21.0 & 83.0 & 67.0 & 54.0 & 27.0 & 41.0 & 77.0 & 63.0 & 57.0 \\
+\midrule
+\addlinespace[0.3em]
+Nemotron-16k & & & & & & & & & & & &  \\
+\quad $\to$SFT $\to$OT30K                        & 48.0 & 79.0 & 75.0 & 46.0 & 81.0 & 70.0 & 57.0 & 41.0 & 42.0 & \textbf{78.0} & 64.0 & 62.0 \\
+\quad $\to$SFT $\to$DPO $\to$OT30K                  & 48.0 & 79.0 & 75.0 & 47.0 & 81.0 & 70.0 & 57.0 & 41.0 & 42.0 & \textbf{78.0} & 65.0 & 62.0 \\
+\midrule
+\addlinespace[0.3em]
+Qwen2.5-1.5B & & & & & & & & & & & &  \\
+\quad $\to$SFT $\to$OT30K                        & 51.0 & 78.0 & \textbf{77.0} & \textbf{73.0} & 84.0 & 67.0 & 46.0 & \textbf{59.0} & 41.0 & 77.0 & 63.0 & \textbf{65.0} \\
+\quad $\to$SFT $\to$DPO $\to$OT30K                  & 51.0 & 78.0 & \textbf{77.0} & \textbf{73.0} & 84.0 & 67.0 & 46.0 & \textbf{59.0} & 41.0 & 77.0 & 63.0 & \textbf{65.0} \\
+\midrule
+\addlinespace[0.3em]
+Qwen3-1.7B & & & & & & & & & & & &  \\
+\quad $\to$SFT $\to$OT30K                        & 49.0 & 76.0 & 75.0 & 65.0 & 81.0 & 59.0 & 43.0 & 53.0 & 39.0 & 74.0 & 60.0 & 61.0 \\
+\quad $\to$SFT $\to$DPO $\to$OT30K                  & 49.0 & 76.0 & 75.0 & 65.0 & 81.0 & 59.0 & 43.0 & 53.0 & 39.0 & 74.0 & 61.0 & 61.0 \\
+\midrule
+\addlinespace[0.3em]
+SmolLM2-1.7B-16k & & & & & & & & & & & &  \\
+\quad $\to$SFT $\to$OT30K                        & \textbf{53.0} & \textbf{81.0} & 70.0 & 59.0 & \textbf{88.0} & \textbf{71.0} & \textbf{64.0} & 44.0 & 43.0 & \textbf{78.0} & \textbf{66.0} & \textbf{65.0} \\
+SmolLM2-1.7B-Instruct-16k & & & & & & & & & & & &  \\
+\quad $\to$OT30K                              & 51.0 & 79.0 & 76.0 & 62.0 & 83.0 & \textbf{71.0} & 59.0 & 47.0 & \textbf{44.0} & \textbf{78.0} & \textbf{66.0} & \textbf{65.0} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+

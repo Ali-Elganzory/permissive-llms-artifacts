@@ -1,0 +1,48 @@
+\section{Statistical methodology and full contrasts}
+\label{app:stats}
+
+\paragraph{What the intervals describe.}
+Every Protocol~A result is evaluated three times, with decoding seeds 42, 1234, and 2025,
+and reported as a mean with a sample standard deviation over those three runs. Under
+greedy decoding the residual run-to-run variation comes from batching and kernel
+nondeterminism in the inference engine rather than from sampling, which is why the
+standard deviations are small but nonzero, and occasionally large on the 30-problem
+contest-mathematics sets where a single problem is worth 3.3 points. These seeds do not
+estimate variability across independent pre-training runs. Doing so would require
+repeating the 300B-token pre-training runs, which was out of reach.
+
+\paragraph{Paired item-level bootstrap.}
+Contrasts on the suite average carry 95\% percentile intervals from a paired item-level
+bootstrap with 2{,}000 replicates. Scores are averaged over the three seeds first, giving
+one score per item per checkpoint. Each replicate resamples items with replacement
+\emph{within} each benchmark, which preserves the composition of the eleven-benchmark
+macro average in every replicate, and the contrast is recomputed on the resampled items.
+Because the two checkpoints of a contrast are evaluated on the same items, the resampling is
+paired and the interval reflects the uncertainty of the difference rather than of the two
+levels separately. JEEBench awards partial credit, so item scores lie in $[0,1]$ and are
+treated as such rather than as Bernoulli outcomes. Two-sided $p$-values are taken from
+the bootstrap distribution and corrected within each contrast family with the
+Benjamini-Hochberg procedure. The three families are the front-loading effects, the
+substrate contrasts at matched front-loading, and the interaction, and
+Table~\ref{tab:contrasts} reports all of them.
+
+\input{tables/contrasts}
+
+\paragraph{Robustness to how the suite is weighted.}
+The eleven-task macro average contains five mathematics and three code benchmarks, so it
+implicitly weights those domains at 45\% and 27\%. Table~\ref{tab:domain_robustness}
+recomputes the two headline quantities under an equal-domain average, which gives each of
+the four capability domains equal weight, and with each domain removed in turn. Neither
+the front-loading effect nor the substrate contrast depends on the weighting.
+
+\input{tables/domain_robustness}
+
+\paragraph{The contest-mathematics benchmarks.}
+AIME24 and AIME25 contain 30 problems each and AMC23 contains 40. At those sizes a paired
+binomial power analysis puts the effect needed for 80\% power at roughly 28 points for the
+AIME sets and 30 points for AMC23, so their percentage-point estimates are intrinsically
+imprecise and we do not build effect-size claims on them. Where we quote them, as in the
+pre-training ablation of Section~\ref{sec:receptivity} where AIME24 and AIME25 fall to
+exactly zero, the claim is that a model does or does not clear the benchmark floor, which
+is a qualitatively different and far more robust statement than an estimate of how far it
+clears it by.

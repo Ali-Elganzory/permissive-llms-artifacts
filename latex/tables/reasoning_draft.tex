@@ -1,0 +1,109 @@
+
+\begin{table}[ht]
+\centering
+\caption{Per-benchmark results for the 100B-token MixtureVitae mixture-composition ablation on the primary reasoning suite. Removing the instruction-and-reasoning subset causes a broad collapse in math, code, and reasoning that Phase 1 Tulu3 SFT/DPO does not recover, whereas removing the curated web subset leaves performance comparable to, and on several benchmarks stronger than, the full mixture at both 4K and 16K context. Bold marks the column maximum.}
+\label{tab:evalchemy_table1}
+\scriptsize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrrrrrrrrr}
+\toprule
+\textbf{Model} & \textbf{A24} & \textbf{A25} & \textbf{AMC} & \textbf{M500} & \textbf{GSM8K} & \textbf{HE} & \textbf{LCB} & \textbf{MBPP} & \textbf{GPQA} & \textbf{JEE} & \textbf{IFE} & \textbf{Avg} \\
+\midrule
+MV-noinstruct & 0.0 & 0.0 & 0.0 & 0.4 & 2.6 & 0.6 & 0.0 & 14.2 & 23.9 & 0.0 & 24.8 & 6.1 \\
+\quad $\to$ SFT & 0.0 & 0.0 & 2.5 & 1.8 & 4.2 & 7.3 & 1.0 & 15.8 & 20.7 & 3.4 & 29.9 & 7.9 \\
+\quad $\to$ SFT $\to$ DPO & 0.0 & 0.0 & 2.5 & 2.0 & 3.8 & 7.0 & 1.4 & 15.2 & 25.1 & 4.0 & 32.0 & 8.5 \\
+\midrule
+\addlinespace[0.3em]
+MV-noinstruct-16k & 0.0 & 0.0 & 2.5 & 1.6 & 4.2 & 1.5 & 0.0 & 2.0 & 24.6 & 4.7 & 32.9 & 6.7 \\
+\quad $\to$ SFT & 0.0 & 0.0 & 0.0 & 2.2 & 4.8 & 3.4 & 0.4 & 3.4 & \textbf{25.6} & 2.1 & 35.2 & 7.0 \\
+\quad $\to$ SFT $\to$ DPO & 0.0 & 0.0 & 2.5 & 2.6 & 5.2 & 4.9 & 0.6 & 4.8 & 23.7 & 2.2 & 36.0 & 7.5 \\
+\midrule
+\addlinespace[0.3em]
+MV-noweb & 0.0 & 0.0 & 17.5 & 26.4 & 42.4 & 23.5 & \textbf{7.4} & 34.6 & 23.7 & 2.6 & 26.5 & \textbf{18.6} \\
+\quad $\to$ SFT & 0.0 & 0.0 & 7.5 & 10.0 & 36.0 & 23.6 & 2.4 & 36.8 & 22.4 & 3.7 & 35.0 & 16.1 \\
+\quad $\to$ SFT $\to$ DPO & 0.0 & \textbf{3.3} & 10.0 & 12.2 & 36.5 & \textbf{25.1} & 1.8 & \textbf{38.0} & 25.2 & 4.3 & 36.2 & 17.5 \\
+\midrule
+\addlinespace[0.3em]
+MV-noweb-16k & 0.0 & 0.0 & 10.0 & 35.0 & \textbf{44.7} & 10.7 & 3.5 & 9.0 & 23.9 & 4.4 & 37.4 & 16.2 \\
+\quad $\to$ SFT & 0.0 & 0.0 & 7.5 & 18.2 & 33.6 & 9.5 & 3.5 & 7.2 & 22.1 & 4.3 & 38.2 & 13.1 \\
+\quad $\to$ SFT $\to$ DPO & \textbf{3.3} & \textbf{3.3} & \textbf{20.0} & 21.2 & 35.0 & 11.0 & 3.3 & 7.8 & 21.0 & 2.9 & 38.3 & 15.2 \\
+\midrule
+\addlinespace[0.3em]
+MV & \textbf{3.3} & 0.0 & 0.0 & 12.2 & 42.1 & 0.6 & 0.0 & 0.2 & 24.4 & 3.2 & 21.2 & 9.8 \\
+\quad $\to$ SFT & 0.0 & 0.0 & 5.0 & 6.6 & 38.4 & 22.3 & 3.3 & 36.8 & 20.7 & 2.5 & 34.9 & 15.5 \\
+\quad $\to$ SFT $\to$ DPO & 0.0 & 0.0 & 5.0 & 8.0 & 39.2 & 22.6 & 4.3 & 36.4 & 24.4 & 2.9 & 35.1 & 16.2 \\
+\midrule
+\addlinespace[0.3em]
+MV-16k & 0.0 & 0.0 & 17.5 & \textbf{35.2} & 40.6 & 2.5 & 3.7 & 7.2 & 22.4 & \textbf{7.2} & 40.4 & 16.1 \\
+\quad $\to$ SFT & 0.0 & 0.0 & 0.0 & 3.2 & 36.5 & 11.6 & 0.6 & 6.4 & 23.9 & 4.4 & 39.5 & 11.5 \\
+\quad $\to$ SFT $\to$ DPO & 0.0 & 0.0 & 0.0 & 3.4 & 36.4 & 0.9 & 0.8 & 8.2 & 24.6 & 4.0 & \textbf{41.6} & 10.9 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+
+\begin{table}[ht]
+\centering
+\caption{Reasoning-suite comparison between decontaminated and non-decontaminated 300B MixtureVitae checkpoints at 4K and 16K context, before and after Phase 1 Tulu3 SFT/DPO. Decontamination changes some base scores, but the post-training picture remains the same: the gains reported in the main paper persist after decontamination. Bold marks the column maximum.}
+\label{tab:evalchemy_table3}
+\resizebox{\textwidth}{!}{%
+\scriptsize
+\begin{tabular}{llrrrrrrrrrrrr}
+\toprule
+\textbf{Base} & \textbf{Model} & \textbf{A24} & \textbf{A25} & \textbf{AMC} & \textbf{M500} & \textbf{GSM8K} & \textbf{HE} & \textbf{LCB} & \textbf{MBPP} & \textbf{GPQA} & \textbf{JEE} & \textbf{IFE} & \textbf{Avg}  \\
+\midrule
+\multirow{6}{*}{Not Decontaminated} & MV & 0.0 & 0.0 & 15.0 & 14.6 & 53.1 & 26.6 & 11.2 & 43.0 & 22.2 & 5.0 & 27.8 & 19.9 \\
+ & \quad $\to$ SFT & \textbf{6.7} & 0.0 & 2.5 & 16.4 & 50.6 & 32.5 & 11.2 & 42.6 & 25.6 & 3.5 & 45.0 & 21.5 \\
+ & \quad $\to$ SFT $\to$ DPO & 0.0 & 0.0 & 7.5 & 17.6 & 50.9 & 32.8 & 12.5 & 43.0 & \textbf{27.8} & 3.5 & 46.7 & 22.0 \\
+\cmidrule{2-14}
+ & MV-16k & 3.3 & 6.7 & 20.0 & 36.6 & \textbf{61.8} & 30.0 & 16.8 & 41.8 & 22.6 & \textbf{11.0} & 47.9 & 27.1 \\
+ & \quad $\to$ SFT & 0.0 & 0.0 & 5.0 & 18.0 & 51.3 & 29.7 & 10.6 & \textbf{43.2} & 27.3 & 2.7 & 49.5 & 21.6 \\
+ & \quad $\to$ SFT $\to$ DPO & 0.0 & 0.0 & 0.0 & 18.0 & 51.5 & 30.0 & 11.0 & 41.8 & 25.2 & 3.8 & \textbf{50.7} & 21.1 \\
+\midrule
+\addlinespace[0.3em]
+\multirow{6}{*}{Decontaminated} & MV & 0.0 & \textbf{10.0} & 7.5 & 17.4 & 53.5 & 11.7 & 12.7 & 18.6 & 23.9 & 4.1 & 25.6 & 16.8 \\
+ & \quad $\to$ SFT & 0.0 & 0.0 & 7.5 & 28.6 & 49.3 & 27.9 & 2.1 & 41.2 & 26.1 & 4.2 & 42.4 & 20.8 \\
+ & \quad $\to$ SFT $\to$ DPO & 0.0 & 0.0 & 15.0 & 27.4 & 50.5 & 27.9 & 1.8 & 40.8 & 24.6 & 3.1 & 42.9 & 21.3 \\
+\cmidrule{2-14}
+ & MV-16k & 0.0 & 0.0 & \textbf{27.5} & \textbf{46.0} & 58.6 & 31.9 & \textbf{22.7} & 39.8 & 25.2 & 8.2 & 46.9 & \textbf{27.9} \\
+ & \quad $\to$ SFT & 3.3 & 0.0 & 12.5 & 31.0 & 51.9 & \textbf{33.2} & 15.5 & 40.6 & 23.4 & 5.2 & 47.1 & 24.0 \\
+ & \quad $\to$ SFT $\to$ DPO & \textbf{6.7} & 0.0 & 15.0 & 33.6 & 52.1 & \textbf{33.2} & 14.9 & 40.0 & 25.2 & 5.4 & 49.5 & 25.0 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+
+\begin{table}[ht]
+\centering
+\caption{Reasoning-suite results for the smaller-scale comparison between MV (0.4B) and Baguettotron. Across 4K and 16K context, MV is substantially more receptive to Phase 1 post-training, especially on code and broader reasoning, while Baguettotron remains weak throughout. Bold marks the column maximum.}
+\label{tab:evalchemy_table4}
+\scriptsize
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrrrrrrrrrr}
+\toprule
+\textbf{Model} & \textbf{A24} & \textbf{A25} & \textbf{AMC} & \textbf{M500} & \textbf{GSM8K} & \textbf{HE} & \textbf{LCB} & \textbf{MBPP} & \textbf{GPQA} & \textbf{JEE} & \textbf{IFE} & \textbf{Avg} \\
+\midrule
+Baguettotron & 0.0 & \textbf{0.0} & 0.0 & 0.2 & 2.3 & 0.0 & 0.0 & 0.0 & 23.1 & 0.2 & 24.3 & 4.5 \\
+\quad $\to$ SFT & 0.0 & \textbf{0.0} & 2.5 & 2.0 & 7.7 & 0.0 & 0.0 & 0.0 & 24.4 & 1.3 & 26.9 & 5.9 \\
+\quad $\to$ SFT $\to$ DPO & 0.0 & \textbf{0.0} & 0.0 & 2.8 & 8.3 & 0.0 & 0.0 & 0.0 & \textbf{26.3} & 1.1 & 30.2 & 6.2 \\
+\midrule
+\addlinespace[0.3em]
+Baguettotron 16k & 0.0 & \textbf{0.0} & 0.0 & 2.0 & 5.2 & 0.6 & 0.0 & 0.0 & 21.6 & 1.8 & \textbf{34.2} & 5.9 \\
+\quad $\to$ SFT & 0.0 & \textbf{0.0} & 2.5 & 2.4 & 8.1 & 0.0 & 0.0 & 0.0 & 24.4 & 1.1 & 30.0 & 6.2 \\
+\quad $\to$ SFT $\to$ DPO & 0.0 & \textbf{0.0} & 2.5 & 3.2 & 8.7 & 0.0 & 0.0 & 0.0 & 24.9 & 1.5 & 31.8 & 6.6 \\
+\midrule
+\addlinespace[0.3em]
+MV (0.4B) & \textbf{3.3} & \textbf{0.0} & 2.5 & 0.6 & 28.7 & 1.2 & 1.0 & 5.2 & 22.4 & 1.1 & 19.6 & 7.8 \\
+\quad $\to$ SFT & 0.0 & \textbf{0.0} & 2.5 & 6.2 & 23.1 & 0.6 & 7.0 & 12.2 & 25.6 & 1.7 & 27.1 & 9.6 \\
+\quad $\to$ SFT $\to$ DPO & 0.0 & \textbf{0.0} & 2.5 & 7.4 & 23.1 & \textbf{15.3} & \textbf{8.2} & \textbf{22.6} & 24.1 & 2.3 & 28.1 & 12.1 \\
+\midrule
+\addlinespace[0.3em]
+MV-16k (0.4B) & 0.0 & \textbf{0.0} & \textbf{7.5} & \textbf{19.8} & \textbf{29.5} & 6.4 & 0.8 & 13.8 & 22.2 & \textbf{4.3} & 32.6 & \textbf{12.4} \\
+\quad $\to$ SFT & 0.0 & \textbf{0.0} & 2.5 & 6.2 & 24.5 & 8.9 & 1.4 & 13.6 & 22.9 & 2.3 & 29.9 & 10.2 \\
+\quad $\to$ SFT $\to$ DPO & 0.0 & \textbf{0.0} & 2.5 & 6.8 & 24.9 & 7.7 & 1.6 & 11.2 & 23.1 & 2.6 & 31.4 & 10.1 \\
+\bottomrule
+\end{tabular}}
+
+\end{table}

@@ -1,0 +1,184 @@
+\subsection{\texttt{open-sci-ref} setup and hyperparameters}
+\label{app:hyperparams}
+
+\begin{table}[htbp]
+\centering
+\caption{The training schedules used in our experiments.}
+\label{tab:training_schedules}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}l c c c c c@{}}
+\toprule
+\textbf{Tokens} &
+\textbf{\makecell[c]{Global Batch Size \\ (tokens)}} &
+\textbf{Iterations} &
+\textbf{\makecell[c]{Learning \\ Rate}} &
+\textbf{Warmup} &
+\textbf{\makecell[c]{Cooldown \\ (20\%)}} \\
+\midrule
+100B  & 4.12M & 23,842  & $4\times10^{-3}$ & 8,334  & 4,768  \\
+300B & 4.12M & 72,661  & $4\times10^{-3}$ & 25,000 & 14,532 \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+
+\begin{table*}[htbp]
+\centering
+\caption{\textbf{open-sci-ref}~\citep{nezhurina2025opensciref} model architecture and scales. We used tied embedding weights in all experiments.}
+\label{tab:opensciref_scales}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}l c c c c c c@{}}
+\toprule
+\textbf{\makecell[l]{Parameters (B) \\ (Non-Emb + Emb)}} &
+\textbf{Layers} &
+\textbf{Hidden} &
+\textbf{Heads} &
+\textbf{\makecell[l]{FFN \\ Hidden}} &
+\textbf{Memory} &
+\textbf{\makecell[l]{FLOPs}} \\
+\midrule
+$0.35 + 0.05 = 0.40$ & 22 & 1024 & 16 & 3840 & $2.88\,\mathrm{GB}$ & $2.4\times10^{9}$ \\
+$1.61 + 0.10 = 1.71$ & 24 & 2048 & 32 & 8192 & $9.884\,\mathrm{GB}$ & $1.0\times10^{10}$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+This appendix details the exact model architectures and training hyperparameters used for all \texttt{open-sci-ref}-based pre-training. 
+
+\paragraph{Model Architecture}
+Table~\ref{tab:opensciref_scales} defines the two model scales used in our study. The columns are defined as follows:
+
+\begin{description}
+    \item[Parameters (B) (Non-Emb + Emb)] The total model parameters in billions, separated into \textbf{Non-Embedding} (Non-Emb) parameters (the core transformer blocks) and \textbf{Embedding} (Emb) parameters (the token lookup tables). As noted in the caption, we used tied embedding weights.
+    \item[Layers] The total number of transformer blocks stacked in the model.
+    \item[Hidden] The hidden size (or embedding dimension, $d_{\text{model}}$) of the model.
+    \item[Heads] The number of attention heads in the multi-head attention mechanism.
+    \item[FFN Hidden] The inner dimension of the Feed-Forward Network (FFN) layer within each transformer block.
+    \item[Memory] The approximate VRAM required to store the model weights, in bfloat16.
+    \item[FLOPs] An approximation of the training compute cost using the  \textbf{6N} rule: a standard estimate for a transformer's forward-and-backward pass, where \textbf{N} is the number of \textit{non-embedding} parameters~\citep{kaplan2020scalinglawsneurallanguage}.
+\end{description}
+
+\begin{table}[htbp]
+\centering
+\caption{Hyperparameters used for OT3 (OpenThoughts-3, 30k samples) SFT runs.
+All runs share the same recipe, and only the attention backend and chat template change per architecture.}
+\label{tab:ot30k_sft_hyperparams}
+\begin{tabular}{ll}
+\toprule
+Hyperparameter & Value \\
+\midrule
+Dataset                       & \texttt{open-thoughts/OpenThoughts-3} (30k samples) \\
+Stage / fine-tuning type      & SFT, full-parameter \\
+Trainer / framework           & LLaMA-Factory \\
+Distributed strategy          & DeepSpeed ZeRO-3 \\
+Precision                     & BF16 \\
+Liger Kernel                  & enabled \\
+Attention backend             & FA2 (Llama/Qwen) / SDPA (opensci-arch) \\
+\addlinespace
+Sequence length (cutoff\_len) & 16{,}384 \\
+Per-device batch size         & 1 \\
+Gradient accumulation steps   & 4 \\
+World size                    & 32 H100 (8 nodes $\times$ 4) \\
+Effective global batch size   & 128 \\
+\addlinespace
+Optimizer                     & AdamW (LLaMA-Factory default) \\
+Learning rate                 & $4 \times 10^{-5}$ \\
+LR schedule                   & Cosine \\
+Warmup ratio                  & 0.1 \\
+Epochs                        & 5 \\
+Group by length               & true \\
+Seed                          & 42 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:ot30k_sft_hyperparams} gives the hyperparameters for the reasoning post-training runs, and Tables~\ref{tab:ot30k_sft_gpu_hours} and~\ref{tab:long_ctx_extension_gpu_hours} the corresponding compute.
+
+
+\paragraph{Training Schedules}
+Table~\ref{tab:training_schedules} defines the training hyperparameters for our two main experimental runs (100B and 300B tokens). We use a single stage training with no post-training.
+
+\begin{description}
+    \item[Tokens] The total number of tokens in the training run.
+    \item[Global Batch Size (tokens)] The total number of tokens processed in a single training step (i.e., one gradient update) across all GPUs.
+    \item[Iterations] The total number of training steps.
+    \item[Learning Rate] The peak learning rate used during training.
+    \item[Warmup] The number of initial \textit{iterations} (steps) over which the learning rate linearly increases from 0 to its peak value.
+    \item[Cooldown (20\%)] The number of final \textit{iterations} (the last 20\% of training) over which the learning rate decays to zero.
+\end{description}
+
+\paragraph{Compute resources}
+
+Compute resources spent on OpenThoughts3 30k experiments are shown in table \ref{tab:opensciref_scales}.
+
+\paragraph{Pre-training token budget} Tab. \ref{tab:budget} shows the pre-training token budget for each model and its ratio relative to MV.
+
+\section{Evaluation setup details}
+Tables~\ref{tab:eval-settings-A} and~\ref{tab:eval-settings-B} define the reasoning-suite abbreviations together with the benchmark-specific metrics, shot counts, decoding settings, and maximum generation lengths under each of the two evaluation protocols, while Table~\ref{tab:eval_settings_general} lists the standard language-understanding benchmarks and their few-shot configurations under the default the LM Evaluation Harness setup.
+
+\clearpage
+
+% Single-run GPU-hours for OT3 (30k) SFT on MareNostrum~5 ACC. All runs: 32~H100 (8 nodes $\times$ 4 GPUs). Difference between groups is the attention backend: FA2 (Llama/Qwen) is ${\sim}2\times$ faster than SDPA (opensci-arch).
+
+\begin{table}[htbp]
+\centering
+\caption{Single-run GPU-hours for OT3 (30k) SFT.
+All runs: 32~H100 (8 nodes $\times$ 4 GPUs). Difference between groups
+is the attention backend: FA2 (Llama/Qwen) is ${\sim}2\times$ faster than SDPA (opensci-arch).}
+\label{tab:ot30k_sft_gpu_hours}
+\begin{tabular}{llrl}
+\toprule
+Base model & Attention & GPU-hours & Training \\
+\midrule
+MixtureVitae-1.7B                & SDPA & 106 & OT3 30K SFT \\
+MixtureVitae-1.7B + SFT-Tulu3    & SDPA & 106 & OT3 30K SFT \\
+MixtureVitae-1.7B + DPO-Tulu3    & SDPA & 105 & OT3 30K SFT \\
+Comma0.1-1.7B + SFT-Tulu3        & SDPA & 105 & OT3 30K SFT \\
+Comma0.1-1.7B + DPO-Tulu3        & SDPA & 158 & OT3 30K SFT \\
+FineWeb-1.7B + SFT-Tulu3   & SDPA & 106 & OT3 30K SFT \\
+Nemotron-1.7B + SFT-Tulu3  & SDPA & 106 & OT3 30K SFT \\
+Nemotron-1.7B + DPO-Tulu3  & SDPA & 106 & OT3 30K SFT \\
+\addlinespace
+Qwen3-1.7B-Base                  & FA2  & 60  & OT3 30K SFT \\
+Qwen3-1.7B-Base + SFT-Tulu3      & FA2  & 57  & OT3 30K SFT \\
+Qwen3-1.7B-Base + DPO-Tulu3      & FA2  & 57  & OT3 30K SFT \\
+Qwen2.5-1.5B                     & FA2  & 53  & OT3 30K SFT \\
+Qwen2.5-1.5B + SFT-Tulu3         & FA2  & 53  & OT3 30K SFT \\
+Qwen2.5-1.5B + DPO-Tulu3         & FA2  & 52  & OT3 30K SFT \\
+SmolLM2-1.7B                     & FA2  & 48  & OT3 30K SFT \\
+SmolLM2-1.7B-Instruct            & FA2  & 48  & OT3 30K SFT \\
+SmolLM2-1.7B + SFT-Tulu3         & FA2  & 44  & OT3 30K SFT \\
+SmolLM2-1.7B + DPO-Tulu3         & FA2  & 47  & OT3 30K SFT \\
+\midrule
+\textbf{Total (18 runs)}         &      & \textbf{1417} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Single-run GPU-hours for long-context extension SFT on JUPITER Booster
+
+\begin{table}[htbp]
+\centering
+\caption{Single-run GPU-hours for long-context extension SFT.
+All runs: 8~GH200 (2 nodes $\times$ 4 GPUs), 1 epoch ($\approx$16k tokens/seq, YaRN RoPE scaling), SDPA attention.}  \label{tab:long_ctx_extension_gpu_hours}
+\begin{tabular}{llrl}
+\toprule
+Base model & Attention & GPU-hours & Training \\
+\midrule 
+MixtureVitae-1.7B  & SDPA & 12 & Long-ctx SFT (16k) \\
+Comma0.1-1.7B      & SDPA & 12 & Long-ctx SFT (16k) \\
+DCLM-1.7B           & SDPA & 12 & Long-ctx SFT (16k) \\
+FineWeb-Edu-1.7B    & SDPA & 12 & Long-ctx SFT (16k) \\
+Nemotron-HQ-1.7B    & SDPA & 12 & Long-ctx SFT (16k) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\input{tables/budget}
+
+\clearpage
